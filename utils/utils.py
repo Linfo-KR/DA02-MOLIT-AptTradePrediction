@@ -7,7 +7,7 @@ def create_folder(dir):
         if not os.path.exists(dir):
             os.makedirs(dir)
     except OSError:
-        print('Occuring Error : Creating Directory. ' + dir)
+        print(f'[ERROR] => Creating Folder Error {dir}')
         
 def date_generator(startYear, endYear):
     startDate = datetime.date(startYear, 1, 1)

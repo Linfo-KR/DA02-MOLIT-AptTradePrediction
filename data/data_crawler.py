@@ -23,6 +23,8 @@ def setup_query_list(startYear, endYear):
                 serviceKey = serviceKeyList[0]
             elif dateList[date][0:4] in ('2021', '2022', '2023'):
                 serviceKey = serviceKeyList[1]
+            elif dateList[date][0:4] in ('2015', '2016', '2017'):
+                serviceKey = serviceKeyList[2]
                 
             queryParams = (serviceUrl + 
                         'LAWD_CD=' + str(regionCode[region][0]) + 
@@ -43,7 +45,7 @@ def setup_query_list(startYear, endYear):
     
 def crawler(startYear, endYear):
     conn, cursor = connect_db('AptTradeDB')
-    create_table_query(conn, cursor, 'tbl_trade')
+    create_table_query('AptTradeDB', 'tbl_trade')
     
     queryList = setup_query_list(startYear, endYear)
     
@@ -64,11 +66,11 @@ def crawler(startYear, endYear):
         
         insertList = []
         
-        try:
-            for result in resultList:
-                resultCode = result.find('resultCode').string.strip()
-                resultMsg = result.find('resultMsg').string.strip()
+        for result in resultList:
+            resultCode = result.find('resultCode').string.strip()
+            resultMsg = result.find('resultMsg').string.strip()
             
+        try:
             for item in range(len(itemList)):
                 year = itemList[item].find('년').string.strip()
                 month = itemList[item].find('월').string.strip()
@@ -85,16 +87,21 @@ def crawler(startYear, endYear):
                 insert = [year, month, day, price, code, dong_name, jibun, con_year, apt_name, area, floor]
                 insertList.append(insert)
                 insertCnt += 1
-            
-            insert_query(conn, cursor, 'tbl_trade', insertList)
-            observeCnt += insertCnt
-            
-            print(f'[PROCESSING] => Index : [{queryIndex} / {queryLength}] \t Inserted : [{insertCnt}] \t Observed : [{observeCnt}]')
-            logging.info(f'[PROCESSING] => Index : [{queryIndex} / {queryLength}] \t Inserted : [{insertCnt}] \t Observed : [{observeCnt}]')
-                    
+                
         except Exception as e:
-            eMsg = f"[ERROR] API GET Result Code and Msg => [{resultCode} / {resultMsg}]"
-            print(eMsg, "\n")
+            getResultMsg = f'[API GET RESULT] => [{resultCode} / {resultMsg}]'
+            print(getResultMsg, "\n")
+            if isinstance(e, AttributeError):
+                print(f'[ATTRIBUTE ERROR] => {e}', "\n")
+            elif isinstance(e, ValueError):
+                print(f'[VALUE ERROR] => {e}', "\n")
+            else:
+                print(f'[ERROR] => {e}', "\n")
+        
+        insert_query(conn, cursor, 'tbl_trade', insertList)
+        observeCnt += insertCnt
+        
+        print(f'[PROCESSING] => Index : [{queryIndex} / {queryLength}] \t Inserted : [{insertCnt}] \t Observed : [{observeCnt}]', "\n")
                 
     cursor.close()
     conn.close()
