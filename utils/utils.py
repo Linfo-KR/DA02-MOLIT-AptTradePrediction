@@ -1,5 +1,6 @@
 import os
 import datetime
+import logging
 
 
 def create_folder(dir):
@@ -23,3 +24,18 @@ def date_generator(startYear, endYear):
         currentDate = currentDate.replace(day=1)
          
     return dateList
+
+def logger(loggerName, logFile, level=logging.INFO):
+    logger = logging.getLogger(loggerName)
+    logger.setLevel(level)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    
+    fileHandler = logging.FileHandler(logFile)
+    fileHandler.setFormatter(formatter)
+    logger.addHandler(fileHandler)
+    
+    consoleHandler = logging.StreamHandler()
+    consoleHandler.setFormatter(formatter)
+    logger.addHandler(consoleHandler)
+    
+    return logger

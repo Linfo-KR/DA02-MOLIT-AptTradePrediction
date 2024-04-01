@@ -1,51 +1,58 @@
 import requests
-import logging
 import time
 
 from bs4 import BeautifulSoup
 
-from data.load_static import *
-from data.sql_db import *
+from data.static import *
+from data.query import *
 from utils.utils import *
 
 
 def setup_query_list(startYear, endYear):
-    regionCode = load_region_code(regionCodeDir)
+    create_folder('./log')
+    setQueryLogger = logger('setup_query_list', './log/setup_query_list.log')
+    
     dateList = date_generator(startYear, endYear)
+    regionCode = import_data('AptTradeDB', 'tbl_region_code', tblRegionCodeOrderDict)
     
     queryCnt = 0
     
     queryList = []
-    
-    for region in range(len(regionCode)):
-        for date in range(len(dateList)):
-            if dateList[date][0:4] in ('2018', '2019', '2020'):
-                serviceKey = serviceKeyList[0]
-            elif dateList[date][0:4] in ('2021', '2022', '2023'):
-                serviceKey = serviceKeyList[1]
-            elif dateList[date][0:4] in ('2015', '2016', '2017'):
-                serviceKey = serviceKeyList[2]
+    try:
+        for region in range(len(regionCode)):
+            for date in range(len(dateList)):
+                if dateList[date][0:4] in ('2015', '2016', '2017'):
+                    serviceKey = serviceKeyList[0]
+                elif dateList[date][0:4] in ('2018', '2019', '2020'):
+                    serviceKey = serviceKeyList[1]
+                elif dateList[date][0:4] in ('2021', '2022', '2023'):
+                    serviceKey = serviceKeyList[2]
                 
-            queryParams = (serviceUrl + 
-                        'LAWD_CD=' + str(regionCode[region][0]) + 
-                        '&DEAL_YMD=' + str(dateList[date]) + 
-                        '&numOfRows=' + str(100) + 
-                        '&serviceKey=' + serviceKey)
-        
-            queryCnt += 1
-            queryList.append(queryParams)
+                queryParams = (serviceUrl + 
+                            'LAWD_CD=' + str(regionCode[region][0]) + 
+                            '&DEAL_YMD=' + str(dateList[date]) + 
+                            '&numOfRows=' + str(100) + 
+                            '&serviceKey=' + serviceKey)
+            
+                queryCnt += 1
+                queryList.append(queryParams)
 
-        regionLength = len(regionCode)
-        regionIndex = region + 1
-        queryLength = len(regionCode) * len(dateList)
-        msg = f'[{regionIndex} / {regionLength}] {regionCode[region][2]} Crawling Lists are Created => Total [{queryCnt} / {queryLength} Objects]'
-        print(msg, "\n")
+            regionLength = len(regionCode)
+            regionIndex = region + 1
+            queryLength = len(regionCode) * len(dateList)
+            msg = f'[{regionIndex} / {regionLength}] {regionCode[region][2]} Crawling Lists are Created => [{queryCnt} / {queryLength} Objects]'
+            setQueryLogger.info(msg)
         
-    return queryList
-    
+        return queryList
+        
+    except Exception as e:
+        setQueryLogger.error(f'[QUERY SETUP ERROR] => [{e}]')
+        
 def crawler(startYear, endYear):
+    create_folder('./log')
+    crawlerLogger = logger('crawler', './log/crawler.log')
+    
     conn, cursor = connect_db('AptTradeDB')
-    create_table_query('AptTradeDB', 'tbl_trade')
     
     queryList = setup_query_list(startYear, endYear)
     
@@ -90,18 +97,18 @@ def crawler(startYear, endYear):
                 
         except Exception as e:
             getResultMsg = f'[API GET RESULT] => [{resultCode} / {resultMsg}]'
-            print(getResultMsg, "\n")
+            crawlerLogger.error(getResultMsg)
             if isinstance(e, AttributeError):
-                print(f'[ATTRIBUTE ERROR] => {e}', "\n")
+                crawlerLogger.error(f'[ATTRIBUTE ERROR] => [{e}]')
             elif isinstance(e, ValueError):
-                print(f'[VALUE ERROR] => {e}', "\n")
+                crawlerLogger.error(f'[VALUE ERROR] => [{e}]')
             else:
-                print(f'[ERROR] => {e}', "\n")
+                crawlerLogger.error(f'[ERROR] => [{e}]')
         
-        insert_query(conn, cursor, 'tbl_trade', insertList)
+        insert_data(conn, cursor, 'tbl_trade', insertList, tblTradeTotalCols)
         observeCnt += insertCnt
         
-        print(f'[PROCESSING] => Index : [{queryIndex} / {queryLength}] \t Inserted : [{insertCnt}] \t Observed : [{observeCnt}]', "\n")
+        crawlerLogger.info(f"[PROCESSING] => Index : [{queryIndex} / {queryLength}] \t Inserted : [{insertCnt}] \t Observed : [{observeCnt}]")
                 
     cursor.close()
     conn.close()
