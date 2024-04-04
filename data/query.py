@@ -16,12 +16,8 @@ def connect_db(dbName):
         if not dbCheck:
             cursor.execute(f"CREATE DATABASE IF NOT EXISTS {dbName}")
             conn.commit()
-            # connectLogger.info(f'[CREATE DATABASE] => MySQL DATABASE [{dbName}]')
             
         conn = pymysql.connect(host='localhost', port=3306, user='root', password='4303', db=dbName, charset='utf8')
-        # if conn:
-        #     connectLogger.info(f'[CONNECT DATABASE] => MySQL DATABASE [{dbName}]')
-            
         cursor = conn.cursor()
         
         return conn, cursor
@@ -165,16 +161,14 @@ def insert_data(conn, cursor, tableName, dataList, colsList):
         
     except Exception as e:
         insertLogger.error(f"[INSERT ERROR] : [{e}]")
-        
-def import_data(dbName, tableName, colsDict):
+
+def import_data(dbName, tableName, limit):
     create_folder('./log')
     importLogger = logger('import_data', './log/import_data.log')
     conn, cursor = connect_db(dbName)
     try:
-        orderSchemas = ', '.join([f'{col} {orderType}' for col, orderType in colsDict.items()])
         query = f"""
-            SELECT * FROM {tableName}
-            ORDER BY {orderSchemas}
+            SELECT * FROM {tableName} LIMIT {limit}
         """
         cursor.execute(query)
         data = cursor.fetchall()
@@ -192,3 +186,29 @@ def import_data(dbName, tableName, colsDict):
     finally:
         cursor.close()
         conn.close()
+        
+def join_table(dbName, query):
+    create_folder('./log')
+    joinLogger = logger('join_table', './log/join_table.log')
+    conn, cursor = connect_db(dbName)
+    try:
+        query = query
+        cursor.execute(query)
+        data = cursor.fetchall()
+        
+        joinLogger.info(f'[JOIN TABLE] => [Succesfully Join Table]')
+        
+        return data
+        
+    except Exception as e:
+        joinLogger.error(f'[JOIN ERROR] => [{e}]')
+        
+        return None
+        
+    finally:
+        cursor.close()
+        conn.close()
+        
+# Code Refactoring => Normalization / Class화
+# Query 성능 Update
+# DB 설계 다시(ERD / Schema 구조)

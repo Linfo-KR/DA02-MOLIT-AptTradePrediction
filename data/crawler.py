@@ -13,7 +13,7 @@ def setup_query_list(startYear, endYear):
     setQueryLogger = logger('setup_query_list', './log/setup_query_list.log')
     
     dateList = date_generator(startYear, endYear)
-    regionCode = import_data('AptTradeDB', 'tbl_region_code', tblRegionCodeOrderDict)
+    regionCode = import_data('AptTradeDB', 'tbl_region_code', '50')
     
     queryCnt = 0
     

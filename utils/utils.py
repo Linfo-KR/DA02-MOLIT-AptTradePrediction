@@ -1,6 +1,9 @@
 import os
 import datetime
 import logging
+import time
+
+from functools import wraps
 
 
 def create_folder(dir):
@@ -39,3 +42,12 @@ def logger(loggerName, logFile, level=logging.INFO):
     logger.addHandler(consoleHandler)
     
     return logger
+
+def calculate_time(function):
+    @wraps(function)
+    def measure(*args, **kwargs):
+        sTime = time.time()
+        result = function(*args, **kwargs)
+        print(f'[RUN TIME] => [{function.__name__} took {time.time() - sTime} s]')
+        return result
+    return measure

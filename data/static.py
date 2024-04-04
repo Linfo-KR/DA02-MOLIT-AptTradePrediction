@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 
@@ -31,15 +30,6 @@ tblTradeSchemasDict = {
     'floor': 'VARCHAR(4)'
 }
 
-tblTradeOrderDict = {
-    'year': 'DESC',
-    'month': 'DESC',
-    'day': 'DESC',
-    'code': 'DESC',
-    'apt_name': 'DESC',
-    'floor': 'DESC'
-}
-
 tblTradeTotalCols = [
     'year', 'month', 'day', 'price', 'code', 'dong_name', 'jibun', 'con_year', 'apt_name', 'area', 'floor'
 ]
@@ -52,14 +42,22 @@ tblRegionCodeSchemasDict = {
     'addr_2': 'VARCHAR(50)'
 }
 
-tblRegionCodeOrderDict = {
-    'code': 'DESC',
-    'sido': 'DESC',
-    'sigungu': 'DESC',
-    'addr_1': 'DESC',
-    'addr_2': 'DESC'
-}
-
 tblRegionCodeTotalCols = [
     'code', 'sido', 'sigungu', 'addr_1', 'addr_2'
 ]
+
+# mergeQuery = """
+#     SELECT
+#         a.year
+#         a.month
+#         a.day
+#         a.price
+#         a.code
+#         a.con_year
+#         a.area
+#         a.floor
+#         b.addr_1
+#         CONCAT(b.addr_2, ' ', a.dong_name, ' ', a.jibun, ' ', a.apt_name) AS address
+#     FROM tbl_trade AS a
+#         INNER JOIN tbl_region_code AS b ON a.code = b.code
+# """

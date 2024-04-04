@@ -1,9 +1,17 @@
 from data.crawler import *
 from data.query import *
-
+from data.preprocessing import *
+from analysis.eda import EDA
 
 def main():
-    pass
-    
+    inputData = preprocessing('800000')
+    eda = EDA(inputData)
+    # eda.boxplot()
+    # eda.barplot()
+    # eda.histogram()
+    # eda.lineplot()
+    eda.barplot()
+
+
 if __name__ == '__main__':
     main()
