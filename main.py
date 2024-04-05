@@ -10,7 +10,8 @@ def main():
     # eda.barplot()
     # eda.histogram()
     # eda.lineplot()
-    eda.barplot()
+    # eda.barplot()
+    eda.correlation()
 
 
 if __name__ == '__main__':

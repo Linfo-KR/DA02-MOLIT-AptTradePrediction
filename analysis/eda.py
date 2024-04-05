@@ -1,7 +1,7 @@
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import seaborn as sns
 
 from data.preprocessing import *
 from utils.utils import *
@@ -16,14 +16,16 @@ class EDA:
         
         return summary
     
-    def boxplot(self):
-        create_folder('./figures/boxplot')
-        
+    def _set_plot_style(self):
         plt.style.use('default')
         plt.rcParams['figure.figsize'] = (24, 18)
         plt.rcParams['font.size'] = 12
         plt.rcParams['font.family'] = 'Malgun Gothic'
         plt.rcParams['axes.unicode_minus'] = False
+    
+    def boxplot(self):
+        create_folder('./figures/boxplot')
+        self._set_plot_style()
         
         # Box Plot
         # x = addr_1 / y = price
@@ -63,12 +65,7 @@ class EDA:
         
     def lineplot(self):
         create_folder('./figures/lineplot')
-        
-        plt.style.use('default')
-        plt.rcParams['figure.figsize'] = (24, 18)
-        plt.rcParams['font.size'] = 12
-        plt.rcParams['font.family'] = 'Malgun Gothic'
-        plt.rcParams['axes.unicode_minus'] = False
+        self._set_plot_style()
         
         # Line Plot => 시간흐름에 따른 각 구별 집값 변동 추이
         # x = ym / y = price
@@ -113,12 +110,7 @@ class EDA:
         # Bar Plot
         # input = [ym, district, con_year, area, floor, py]
         create_folder('./figures/barplot')
-        
-        plt.style.use('default')
-        plt.rcParams['figure.figsize'] = (24, 18)
-        plt.rcParams['font.size'] = 12
-        plt.rcParams['font.family'] = 'Malgun Gothic'
-        plt.rcParams['axes.unicode_minus'] = False
+        self._set_plot_style()
         
         _, axes = plt.subplots(3, 2)
         # 1) 년도별 거래 건수 비교
@@ -181,12 +173,7 @@ class EDA:
         # Histogram
         # input = price
         create_folder('./figures/histogram')
-        
-        plt.style.use('default')
-        plt.rcParams['figure.figsize'] = (24, 18)
-        plt.rcParams['font.size'] = 12
-        plt.rcParams['font.family'] = 'Malgun Gothic'
-        plt.rcParams['axes.unicode_minus'] = False
+        self._set_plot_style()
         
         # 1) 서울시 전체 집값 분포
         plt.hist(self.data['price'], bins=100, color='limegreen', linewidth=2, alpha=0.3, edgecolor='black')
@@ -216,15 +203,10 @@ class EDA:
             plt.close()
     
     def scatterplot(self):
+        create_folder('./figures/scatterplot')
+        self._set_plot_style()
         # Scatter Plot
         # x = [ym, district, con_year, area(range factor), floor(range factor)] / y = price
-        create_folder('./figures/scatterplot')
-        
-        plt.style.use('default')
-        plt.rcParams['figure.figsize'] = (24, 18)
-        plt.rcParams['font.size'] = 12
-        plt.rcParams['font.family'] = 'Malgun Gothic'
-        plt.rcParams['axes.unicode_minus'] = False
         
         _, axes = plt.subplots(3, 2)
         # 1) 거래시점에 따른 집값 산점도
@@ -270,10 +252,25 @@ class EDA:
         plt.close()
     
     def correlation(self):
+        create_folder('./figures/corr')
+        self._set_plot_style()
         # Correlataion
         # Heatmap
-        pass
     
-# Code Refactoring => Normalization
+        # x = year / con_year / area / floor / py
+        # y = price
+        corrData = self.data[['year', 'con_year', 'area', 'floor', 'py', 'price']]
+        corr = corrData.corr(method='pearson')
+        corrCols = ['year', 'con_year', 'area', 'floor', 'py', 'price']
+        
+        sns.set_theme(font_scale=2)
+        sns.heatmap(corr.values, cbar=True, annot=True, annot_kws={'size':15}, fmt='.2f', square=True, xticklabels=corrCols, yticklabels=corrCols)
+        plt.tight_layout()
+        plt.savefig('./figures/corr/heatmap_seoul.png')
+        plt.cla()
+        plt.clf()
+        plt.close()
+    
+# Code Refactoring => Normalization + Module
 # Graph Design Update
 # Get Insights
