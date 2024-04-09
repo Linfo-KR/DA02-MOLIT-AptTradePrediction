@@ -43,21 +43,45 @@ tblRegionCodeSchemasDict = {
 }
 
 tblRegionCodeTotalCols = [
-    'code', 'sido', 'sigungu', 'addr_1', 'addr_2'
+    'code', 'sido', 'sigungu', 'district_en', 'addr_1', 'addr_2'
 ]
 
-# mergeQuery = """
-#     SELECT
-#         a.year
-#         a.month
-#         a.day
-#         a.price
-#         a.code
-#         a.con_year
-#         a.area
-#         a.floor
-#         b.addr_1
-#         CONCAT(b.addr_2, ' ', a.dong_name, ' ', a.jibun, ' ', a.apt_name) AS address
-#     FROM tbl_trade AS a
-#         INNER JOIN tbl_region_code AS b ON a.code = b.code
-# """
+tblTradeProcessSchemasDict = {
+    'ymd': 'DATE', 
+    'ym': 'DATE', 
+    'year': 'INT', 
+    'code': 'CHAR(5) NOT NULL', 
+    'district_kr': 'VARCHAR(5)', 
+    'district_en': 'VARCHAR(15)',
+    'addr_1': 'VARCHAR(10)', 
+    'apt_name': 'VARCHAR(50)', 
+    'address': 'VARCHAR(50)', 
+    'price': 'INT',
+    'price_unit': 'FLOAT',
+    'con_year': 'INT', 
+    'area': 'FLOAT', 
+    'floor': 'INT', 
+    'py': 'FLOAT', 
+    'py_unit': 'FLOAT', 
+    'cnt': 'INT'
+}
+
+tblTradeProcessTotalCols = [
+    'ymd', 
+    'ym', 
+    'year', 
+    'code', 
+    'district_kr', 
+    'district_en', 
+    'addr_1', 
+    'apt_name',
+    'address', 
+    'price', 
+    'price_unit',
+    'con_year',
+    'area', 
+    'floor',
+    'py',
+    'py_unit',
+    'cnt'
+]

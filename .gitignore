@@ -168,3 +168,12 @@ log/
 *.ppt
 *.pptx
 documents/
+
+# config Files(.json)
+configs/
+
+# result Files
+results/
+
+# figure Files
+figures/
