@@ -11,8 +11,9 @@ class EDA:
         self.data = data
         
     def describe(self):
-        summary = self.data.describe(include=['number', 'object'])
+        summary = self.data.describe()
         summary.to_csv('./results/eda/summary.csv', encoding='utf-8', na_rep='NULL')
+        print(summary)
         
         return summary
     

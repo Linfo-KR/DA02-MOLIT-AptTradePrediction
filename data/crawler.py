@@ -25,7 +25,7 @@ def setup_query_list(startYear, endYear):
                     serviceKey = serviceKeyList[0]
                 elif dateList[date][0:4] in ('2018', '2019', '2020'):
                     serviceKey = serviceKeyList[1]
-                elif dateList[date][0:4] in ('2021', '2022', '2023'):
+                elif dateList[date][0:4] in ('2021', '2022', '2023', '2024'):
                     serviceKey = serviceKeyList[2]
                 
                 queryParams = (serviceUrl + 
@@ -105,7 +105,7 @@ def crawler(startYear, endYear):
             else:
                 crawlerLogger.error(f'[ERROR] => [{e}]')
         
-        insert_data(conn, cursor, 'tbl_trade', insertList, tblTradeTotalCols)
+        insert_data(conn, cursor, 'tbl_trade_test', insertList, tblTradeTestTotalCols)
         observeCnt += insertCnt
         
         crawlerLogger.info(f"[PROCESSING] => Index : [{queryIndex} / {queryLength}] \t Inserted : [{insertCnt}] \t Observed : [{observeCnt}]")

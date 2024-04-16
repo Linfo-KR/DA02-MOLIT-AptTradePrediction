@@ -7,6 +7,7 @@ from data.static import *
 
 def preprocessing(limit):
     rawData = pd.DataFrame(import_data('AptTradeDB', 'tbl_trade', limit), columns = tblTradeTotalCols)
+    # rawData = pd.DataFrame(import_data('AptTradeDB', 'tbl_trade_test', limit), columns = tblTradeTestTotalCols)
     regionCode = pd.DataFrame(import_data('AptTradeDB', 'tbl_region_code', limit), columns = tblRegionCodeTotalCols)
     
     data = rawData.dropna()
@@ -38,4 +39,10 @@ def preprocessing(limit):
     data = data[['ymd', 'ym', 'year', 'code', 'district_kr', 'district_en', 'addr_1', 'apt_name', 'address', 'price', 'price_unit', 'con_year', 'area', 'floor', 'py', 'py_unit', 'cnt']]
     data = data.sort_values('ymd')
     
+    print('[BEFORE COUNTS] => [', len(data), ']', '\n')
+    
+    data = data.drop_duplicates()
+    
+    print('[AFTER COUNTS] => [', len(data), ']', '\n')
+        
     return data

@@ -162,13 +162,13 @@ def insert_data(conn, cursor, tableName, dataList, colsList):
     except Exception as e:
         insertLogger.error(f"[INSERT ERROR] : [{e}]")
 
-def import_data(dbName, tableName, limit):
+def import_data(dbName, tableName, callCols, limit):
     create_folder('./log')
     importLogger = logger('import_data', './log/import_data.log')
     conn, cursor = connect_db(dbName)
     try:
         query = f"""
-            SELECT * FROM {tableName} LIMIT {limit}
+            SELECT {callCols} FROM {tableName} LIMIT {limit}
         """
         cursor.execute(query)
         data = cursor.fetchall()

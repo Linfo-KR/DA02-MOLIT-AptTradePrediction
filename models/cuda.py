@@ -1,10 +1,6 @@
-import os
 import tensorflow as tf
 
 def gpu_using():
-    os.environ['TF_XLA_FLAGS'] = '--tf_xla_enable_xla_devices'
-    os.environ['CUDA_VISIBLE_DEVICES'] = '0'
-    
     gpus = tf.config.experimental.list_physical_devices('GPU')
     
     if len(gpus) > 1:

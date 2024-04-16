@@ -66,22 +66,100 @@ tblTradeProcessSchemasDict = {
     'cnt': 'INT'
 }
 
+# tblTradeProcessTotalCols = [
+#     'ymd', 
+#     'ym', 
+#     'year', 
+#     'code', 
+#     'district_kr', 
+#     'district_en', 
+#     'addr_1', 
+#     'apt_name',
+#     'address', 
+#     'price', 
+#     'price_unit',
+#     'con_year',
+#     'area', 
+#     'floor',
+#     'py',
+#     'py_unit',
+#     'cnt'
+# ]
+
 tblTradeProcessTotalCols = [
-    'ymd', 
-    'ym', 
     'year', 
-    'code', 
-    'district_kr', 
     'district_en', 
-    'addr_1', 
-    'apt_name',
-    'address', 
-    'price', 
     'price_unit',
     'con_year',
     'area', 
     'floor',
-    'py',
     'py_unit',
-    'cnt'
+]
+
+tblTradeTestSchemasDict = {
+    'year': 'CHAR(4)',
+    'month': 'VARCHAR(2)',
+    'day': 'VARCHAR(2)',
+    'price': 'VARCHAR(40)',
+    'code': 'CHAR(5) NOT NULL',
+    'dong_name': 'VARCHAR(40)',
+    'jibun': 'VARCHAR(10)',
+    'con_year': 'CHAR(4)',
+    'apt_name': 'VARCHAR(40)',
+    'area': 'VARCHAR(20)',
+    'floor': 'VARCHAR(4)'
+}
+
+tblTradeTestTotalCols = [
+    'year', 'month', 'day', 'price', 'code', 'dong_name', 'jibun', 'con_year', 'apt_name', 'area', 'floor'
+]
+
+tblTradeTestProcessSchemasDict = {
+    'ymd': 'DATE', 
+    'ym': 'DATE', 
+    'year': 'INT', 
+    'code': 'CHAR(5) NOT NULL', 
+    'district_kr': 'VARCHAR(5)', 
+    'district_en': 'VARCHAR(15)',
+    'addr_1': 'VARCHAR(10)', 
+    'apt_name': 'VARCHAR(50)', 
+    'address': 'VARCHAR(50)', 
+    'price': 'INT',
+    'price_unit': 'FLOAT',
+    'con_year': 'INT', 
+    'area': 'FLOAT', 
+    'floor': 'INT', 
+    'py': 'FLOAT', 
+    'py_unit': 'FLOAT', 
+    'cnt': 'INT'
+}
+
+# tblTradeTestProcessTotalCols = [
+#     'ymd', 
+#     'ym', 
+#     'year', 
+#     'code', 
+#     'district_kr', 
+#     'district_en', 
+#     'addr_1', 
+#     'apt_name',
+#     'address', 
+#     'price', 
+#     'price_unit',
+#     'con_year',
+#     'area', 
+#     'floor',
+#     'py',
+#     'py_unit',
+#     'cnt'
+# ]
+
+tblTradeTestProcessTotalCols = [
+    'year', 
+    'district_en', 
+    'price_unit',
+    'con_year',
+    'area', 
+    'floor',
+    'py_unit',
 ]
