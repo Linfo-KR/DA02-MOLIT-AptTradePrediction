@@ -3,11 +3,13 @@ import datetime
 import logging
 import json
 import time
+import pickle
 import matplotlib
 
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
+import lightgbm as lgb
 
 from sklearn.metrics import r2_score
 from functools import wraps
@@ -79,7 +81,7 @@ class Metrics:
     def __init__(self, test, pred):
         self.test = test
         self.pred = pred
-    
+        
     def MAPE(self):
         mape = round(np.mean(np.abs((self.test - self.pred) / self.test)) * 100, 2)
         mape = mape.values.item()
@@ -101,7 +103,7 @@ class Metrics:
         return mse
     
     def R2(self):
-        r2 = round(r2_score(self.test, self.pred), 2)
+        r2 = np.round(r2_score(self.test, self.pred), 2)
         return r2
     
     
@@ -135,29 +137,35 @@ def observe_dnn_training(history, test, pred, sTime) :
     axes[0, 0].plot(epochs, valLoss, label = 'Validation Loss')
     axes[0, 0].set_title('Training and Validation Loss')
     axes[0, 0].legend()
+    axes[0, 0].grid(True)
     
     axes[0, 1].plot(epochs, mae, label = 'Training MAE')
     axes[0, 1].plot(epochs, valMae, label = 'Validation MAE')
     axes[0, 1].set_title('Training and Validation MAE')
     axes[0, 1].legend()
+    axes[0, 1].grid(True)
     
     axes[1, 0].plot(epochs, lr, label='Learning Rate')
     axes[1, 0].set_title('Diff of Learning Rate')
+    axes[1, 0].grid(True)
     
     axes[1, 1].scatter(test, pred)
     axes[1, 1].set_title('Actual and Predicted Price')
     axes[1, 1].set_xlabel('Actual Price')
     axes[1, 1].set_ylabel('Predicted Price')
+    axes[1, 1].grid(True)
 
     axes[2, 0].plot(test, label='Actual')
     axes[2, 0].plot(pred, label='Prediction')
     axes[2, 0].set_title('Actual and Predicted Price')
     axes[2, 0].legend()
+    axes[2, 0].grid(True)
     
     axes[2, 1].hist(error)
     axes[2, 1].set_xlabel('Prediction Error')
     axes[2, 1].set_ylabel('Frequency')
     axes[2, 1].set_title('Distribution of Prediction Error')
+    axes[2, 1].grid(True)
     
     plt.tight_layout()
     
@@ -194,6 +202,7 @@ def observe_reg_training(test, pred, trainLoss, testLoss, sTime) :
     axes[1, 0].set_xlabel('Prediction Error')
     axes[1, 0].set_ylabel('Frequency')
     axes[1, 0].set_title('Distribution of Prediction Error')
+    axes[1, 0].grid(True)
     
     axes[1, 1].plot(trainLoss, label='Training Loss')
     axes[1, 1].plot(testLoss, label='Validataion Loss')
@@ -211,6 +220,39 @@ def observe_reg_training(test, pred, trainLoss, testLoss, sTime) :
     
     create_folder('./figures/observe_reg_training')
     plt.savefig('./figures/observe_reg_training/Reg' + gname)
+    plt.cla()
+    plt.clf()
+    plt.close()
+    
+
+def observe_lgb_training(model, test, pred, sTime) :
+    residual = test - pred
+    
+    _, axes = plt.subplots(2, 2, figsize = (24, 18))
+    
+    axes[0, 0].scatter(test, pred, color='blue')
+    axes[0, 0].set_title('Actual and Predicted Price')
+    axes[0, 0].set_xlabel('Actual Price')
+    axes[0, 0].set_ylabel('Predicted Price')
+    axes[0, 0].grid(True)
+        
+    axes[0, 1].hist(residual)
+    axes[0, 1].set_xlabel('Prediction Error')
+    axes[0, 1].set_ylabel('Frequency')
+    axes[0, 1].set_title('Distribution of Prediction Error')
+    axes[0, 1].grid(True)
+    
+    lgb.plot_importance(model, title='Factor Importance', ax=axes[1, 0], xlabel='Importance', ylabel='Factors', grid=True)
+    lgb.plot_metric(model, title='Training and Validation Loss', ax=axes[1, 1], xlabel='Iterations', ylabel='Loss', grid=True)
+    
+    plt.tight_layout()
+    
+    mask = '%Y%m%d_%H%M%S'
+    dte = time.strftime(mask, time.localtime(sTime))
+    gname = '-{}.png'.format(dte)
+    
+    create_folder('./figures/observe_lgb_training')
+    plt.savefig('./figures/observe_lgb_training/LGBM' + gname)
     plt.cla()
     plt.clf()
     plt.close()
@@ -304,6 +346,51 @@ def save_reg_result(model, test, pred, evalTrain, sTime, eTime) :
     print(f'\n\n Train R2 => {evalTrain} \n\n')
     print('\n\n', metricsResult, '\n\n')
     
+
+def save_lgb_result(model, lr, ff, bf, bq, depth, leaf, bin, iter, test, pred, sTime, eTime) :
+    create_folder('./results/lgb')
+    create_folder('./results/lgb/models')
+    
+    metrics = Metrics(test, pred)
+    mape = metrics.MAPE()
+    rmse = metrics.RMSE()
+    mae = metrics.MAE()
+    accuracy = round((100 - mape), 2)
+    runTime = round((eTime - sTime) / 60, 2)
+        
+    mask = '%Y%m%d_%H%M%S'
+    dte = time.strftime(mask, time.localtime(sTime))
+    modelName = '-{}.pkl'.format(dte)
+    
+    metricsResult = pd.DataFrame(
+        {
+            'testtime': [dte],
+            'runtime': [runTime],
+            'accuracy': [accuracy],
+            'mape': [mape],
+            'rmse': [rmse],
+            'mae': [mae],
+            'lr': [lr],
+            'ff': [ff],
+            'bf': [bf],
+            'bq': [bq],
+            'depth': [depth],
+            'leaf': [leaf],
+            'bin': [bin],
+            'iter': [iter]
+        }
+    )
+    
+    print('\n\n', metricsResult, '\n\n')
+    
+    if not os.path.exists('./results/lgb/result.csv'):
+        metricsResult.to_csv('./results/lgb/result.csv', mode='w', header=True, index=False)
+    else:
+        metricsResult.to_csv('./results/lgb/result.csv', mode='a', header=False, index=False)
+        
+    with open('./results/lgb/models/LGBM' + modelName, 'wb') as f:
+        pickle.dump(model, f)
+    
     
 def save_dnn_pretrain_result(pretrainY, predY, sTime) :
     create_folder('./results/dnn/pretrain')
@@ -312,7 +399,6 @@ def save_dnn_pretrain_result(pretrainY, predY, sTime) :
     mape = metrics.MAPE()
     rmse = metrics.RMSE()
     mae = metrics.MAE()
-    r2 = metrics.R2()
     accuracy = round((100 - mape), 2)
     diff = np.round(np.abs(pretrainY.values.flatten() - predY.flatten()), 2)
     diffpercent = np.round(np.abs(pretrainY.values.flatten() - predY.flatten()) / pretrainY.values.flatten() * 100, 2)
@@ -323,7 +409,6 @@ def save_dnn_pretrain_result(pretrainY, predY, sTime) :
     pretrainResult = pd.DataFrame(
         {
             'testtime': [dte],
-            'r2': [r2],
             'accuracy': [accuracy],
             'mape': [mape],
             'rmse': [rmse],
@@ -391,5 +476,47 @@ def save_reg_pretrain_result(pretrainY, predY, sTime) :
         pretrainResult.to_csv('./results/reg/pretrainResult.csv', mode='w', header=True, index=False)
     else:
         pretrainResult.to_csv('./results/reg/pretrainResult.csv', mode='a', header=False, index=False)
+        
+    # pretrainValue.to_csv('./results/dnn/pretrain/' + pretrainValueName)
+    
+def save_lgb_pretrain_result(pretrainY, predY, sTime) :
+    create_folder('./results/lgb/pretrain')
+    
+    metrics = Metrics(pretrainY, predY)
+    mape = metrics.MAPE()
+    rmse = metrics.RMSE()
+    mae = metrics.MAE()
+    accuracy = round((100 - mape), 2)
+    diff = np.round(np.abs(pretrainY.values.flatten() - predY.values.flatten()), 2)
+    diffpercent = np.round(np.abs(pretrainY.values.flatten() - predY.values.flatten()) / pretrainY.values.flatten() * 100, 2)
+    mask = '%Y%m%d_%H%M%S'
+    dte = time.strftime(mask, time.localtime(sTime))
+    pretrainValueName = '-{}.csv'.format(dte)
+    
+    pretrainResult = pd.DataFrame(
+        {
+            'testtime': [dte],
+            'accuracy': [accuracy],
+            'mape': [mape],
+            'rmse': [rmse],
+            'mae': [mae]
+        }
+    )
+    
+    pretrainValue = pd.DataFrame(
+        {
+            'actual': pretrainY.values.flatten(),
+            'pred': np.round(predY.values.flatten()),
+            'diff': diff,
+            'diffpercent': diffpercent
+        }
+    )
+    
+    print('\n\n', pretrainResult, '\n\n')
+    
+    if not os.path.exists('./results/lgb/pretrainResult.csv'):
+        pretrainResult.to_csv('./results/lgb/pretrainResult.csv', mode='w', header=True, index=False)
+    else:
+        pretrainResult.to_csv('./results/lgb/pretrainResult.csv', mode='a', header=False, index=False)
         
     # pretrainValue.to_csv('./results/dnn/pretrain/' + pretrainValueName)
